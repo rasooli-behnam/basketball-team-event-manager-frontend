@@ -1,16 +1,37 @@
 import { AppBar, Button, CssBaseline, Toolbar } from "@material-ui/core";
 import React, { Component } from "react";
 
+import CreateEventForm from "./CreateEventForm";
 import Events from "./Events";
+import axios from "axios";
 
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      ...initialVisibilitiesState
+      ...initialVisibilitiesState,
+      events: [],
+      members: []
     };
   }
+
+  UNSAFE_componentWillMount() {
+    this.fetchEvents();
+    this.fetchMembers();
+  }
+
+  fetchEvents = () => {
+    axios
+      .get("http://localhost:8080/api/events")
+      .then(res => this.setState({ events: res.data }));
+  };
+
+  fetchMembers = () => {
+    axios
+      .get("http://localhost:8080/api/members")
+      .then(res => this.setState({ members: res.data }));
+  };
 
   showView = visibilities => {
     this.resetVisibility();
@@ -25,8 +46,18 @@ class App extends Component {
     });
   };
 
+  handleCreateEvent = () => {
+    this.showView(["isEventsVisible"]);
+  };
+
   render() {
-    const { isEventsVisible, isPastEvents } = this.state;
+    const {
+      events,
+      isCreateEventVisible,
+      isEventsVisible,
+      isPastEvents,
+      members
+    } = this.state;
 
     return (
       <React.Fragment>
@@ -52,7 +83,13 @@ class App extends Component {
             </Button>
           </Toolbar>
         </AppBar>
-        <Events isVisible={isEventsVisible} isPastEvents={isPastEvents} />
+        <Events
+          events={events}
+          fetchEvents={this.fetchEvents}
+          isVisible={isEventsVisible}
+          isPastEvents={isPastEvents}
+          members={members}
+        />
       </React.Fragment>
     );
   }

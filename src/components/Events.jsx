@@ -24,20 +24,6 @@ class Events extends Component {
     };
   }
 
-  UNSAFE_componentWillMount() {
-    this.fetchData();
-  }
-
-  fetchData = () => {
-    axios
-      .get("http://localhost:8080/api/events")
-      .then(res => this.setState({ events: res.data }));
-
-    axios
-      .get("http://localhost:8080/api/members")
-      .then(res => this.setState({ members: res.data }));
-  };
-
   handleRowClick = eventData => {
     this.setState({ isUpdateEventFormVisible: true, targetEvent: eventData });
   };
@@ -49,19 +35,14 @@ class Events extends Component {
         billAmount: bill_amount
       })
       .then(() => {
-        this.fetchData();
+        this.props.fetchEvents();
         this.setState({ isUpdateEventFormVisible: false });
       });
   };
 
   render() {
-    const {
-      events,
-      isUpdateEventFormVisible,
-      members,
-      targetEvent
-    } = this.state;
-    const { isVisible, isPastEvents } = this.props;
+    const { isUpdateEventFormVisible, targetEvent } = this.state;
+    const { events, isVisible, isPastEvents, members } = this.props;
 
     return (
       <React.Fragment>
