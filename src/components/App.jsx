@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import CreateEventForm from "./CreateEventForm";
 import Events from "./Events";
 import { GoogleLogin } from "react-google-login";
+import Members from "./Members";
 import axios from "axios";
 
 class App extends Component {
@@ -66,7 +67,6 @@ class App extends Component {
         }
       )
       .then(res => {
-        console.log(res.data);
         this.fetchEvents();
         this.showView(["isEventsVisible"]);
       });
@@ -78,6 +78,7 @@ class App extends Component {
       isAuthenticated,
       isCreateEventVisible,
       isEventsVisible,
+      isMembersVisible,
       isPastEvents,
       members,
       token
@@ -122,6 +123,7 @@ class App extends Component {
             )}
           </Toolbar>
         </AppBar>
+        <Members isVisible={isMembersVisible} members={members} />
         <Events
           events={events}
           fetchEvents={this.fetchEvents}
