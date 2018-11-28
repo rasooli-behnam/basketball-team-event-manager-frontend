@@ -3,6 +3,7 @@ import React, { Component } from "react";
 
 import CreateEventForm from "./CreateEventForm";
 import Events from "./Events";
+import { GoogleLogin } from "react-google-login";
 import axios from "axios";
 
 class App extends Component {
@@ -12,24 +13,31 @@ class App extends Component {
     this.state = {
       ...initialVisibilitiesState,
       events: [],
-      members: []
+      members: [],
+      isAuthenticated: false,
+      token: ""
     };
-  }
-
-  UNSAFE_componentWillMount() {
-    this.fetchEvents();
-    this.fetchMembers();
   }
 
   fetchEvents = () => {
     axios
-      .get("http://localhost:8080/api/events")
+      .get("http://localhost:8080/api/events", {
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": this.state.token
+        }
+      })
       .then(res => this.setState({ events: res.data }));
   };
 
   fetchMembers = () => {
     axios
-      .get("http://localhost:8080/api/members")
+      .get("http://localhost:8080/api/members", {
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": this.state.token
+        }
+      })
       .then(res => this.setState({ members: res.data }));
   };
 
@@ -46,13 +54,10 @@ class App extends Component {
     });
   };
 
-  handleCreateEvent = () => {
-    this.showView(["isEventsVisible"]);
-  };
-
   render() {
     const {
       events,
+      isAuthenticated,
       isCreateEventVisible,
       isEventsVisible,
       isPastEvents,
@@ -64,23 +69,38 @@ class App extends Component {
         <CssBaseline />
         <AppBar position="static">
           <Toolbar>
-            <Button onClick={() => this.showView(["isMembersVisible"])}>
-              Members
-            </Button>
-            <Button onClick={() => this.showView(["isPendingMembersVisible"])}>
-              Pending Members
-            </Button>
-            <Button onClick={() => this.showView(["isEventsVisible"])}>
-              Upcoming Events
-            </Button>
-            <Button
-              onClick={() => this.showView(["isEventsVisible", "isPastEvents"])}
-            >
-              Past Events
-            </Button>
-            <Button onClick={() => this.showView(["isCreateEventVisible"])}>
-              Create new Event
-            </Button>
+            {isAuthenticated ? (
+              <React.Fragment>
+                <Button onClick={() => this.showView(["isMembersVisible"])}>
+                  Members
+                </Button>
+                <Button
+                  onClick={() => this.showView(["isPendingMembersVisible"])}
+                >
+                  Pending Members
+                </Button>
+                <Button onClick={() => this.showView(["isEventsVisible"])}>
+                  Upcoming Events
+                </Button>
+                <Button
+                  onClick={() =>
+                    this.showView(["isEventsVisible", "isPastEvents"])
+                  }
+                >
+                  Past Events
+                </Button>
+                <Button onClick={() => this.showView(["isCreateEventVisible"])}>
+                  Create new Event
+                </Button>
+              </React.Fragment>
+            ) : (
+              <GoogleLogin
+                clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_KEY}
+                buttonText="Login"
+                onSuccess={this.googleResponse}
+                onFailure={this.googleResponse}
+              />
+            )}
           </Toolbar>
         </AppBar>
         <Events
@@ -93,6 +113,26 @@ class App extends Component {
       </React.Fragment>
     );
   }
+
+  logout = () => {
+    this.setState({ isAuthenticated: false, token: "", user: null });
+  };
+
+  googleResponse = response => {
+    axios
+      .post(
+        "http://localhost:8080/api/login",
+        {},
+        { headers: { "x-auth-token": response.tokenId } }
+      )
+      .then(() => {
+        this.setState({ isAuthenticated: true, token: response.tokenId });
+        setTimeout(() => {
+          this.fetchEvents();
+          this.fetchMembers();
+        }, 300);
+      });
+  };
 }
 
 export default App;
