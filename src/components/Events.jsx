@@ -93,10 +93,10 @@ class Events extends Component {
                     >
                       <TableCell>{e.venue}</TableCell>
                       <TableCell>{e.date}</TableCell>
-                      <TableCell>{e.created_by}</TableCell>
+                      <TableCell>{e.created_by.name}</TableCell>
                       {isPastEvents ? (
                         <React.Fragment>
-                          <TableCell>{e.payer}</TableCell>
+                          <TableCell>{e.payer.name}</TableCell>
                           <TableCell>{e.bill_amount}</TableCell>
                         </React.Fragment>
                       ) : (
