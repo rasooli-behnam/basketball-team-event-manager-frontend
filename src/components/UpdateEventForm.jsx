@@ -54,7 +54,7 @@ class UpdateEventForm extends Component {
           <TextField
             className={classes.textField}
             label="Date"
-            value={new Date(eventData.date).toString()}
+            value={new Date(eventData.date).toJSON().substr(0, 16)}
             variant="outlined"
             disabled={true}
             margin="normal"
