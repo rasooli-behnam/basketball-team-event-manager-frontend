@@ -54,6 +54,24 @@ class App extends Component {
     });
   };
 
+  handleCreateNewEvent = ({ venue, date }) => {
+    axios
+      .post(
+        "http://localhost:8080/api/events",
+        { venue, date },
+        {
+          headers: {
+            "x-auth-token": this.state.token
+          }
+        }
+      )
+      .then(res => {
+        console.log(res.data);
+        this.fetchEvents();
+        this.showView(["isEventsVisible"]);
+      });
+  };
+
   render() {
     const {
       events,
@@ -109,6 +127,10 @@ class App extends Component {
           isVisible={isEventsVisible}
           isPastEvents={isPastEvents}
           members={members}
+        />
+        <CreateEventForm
+          isVisible={isCreateEventVisible}
+          onCreateNewEvent={this.handleCreateNewEvent}
         />
       </React.Fragment>
     );
