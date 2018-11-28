@@ -2,9 +2,10 @@ import { AppBar, Button, CssBaseline, Toolbar } from "@material-ui/core";
 import React, { Component } from "react";
 
 import CreateEventForm from "./CreateEventForm";
-import Events from "./Events";
 import { GoogleLogin } from "react-google-login";
 import Members from "./Members";
+import PastEvents from "./PastEvents";
+import UpcomingEvents from "./UpcomingEvents";
 import axios from "axios";
 
 class App extends Component {
@@ -42,11 +43,9 @@ class App extends Component {
       .then(res => this.setState({ members: res.data }));
   };
 
-  showView = visibilities => {
+  showView = view => {
     this.resetVisibility();
-    visibilities.forEach(x => {
-      this.setState({ [x]: true });
-    });
+    this.setState({ [view]: true });
   };
 
   resetVisibility = () => {
@@ -68,7 +67,7 @@ class App extends Component {
       )
       .then(res => {
         this.fetchEvents();
-        this.showView(["isEventsVisible"]);
+        this.showView("isUpcomingEventsVisible");
       });
   };
 
@@ -95,9 +94,9 @@ class App extends Component {
       events,
       isAuthenticated,
       isCreateEventVisible,
-      isEventsVisible,
       isMembersVisible,
-      isPastEvents,
+      isPastEventsVisible,
+      isUpcomingEventsVisible,
       members,
       token
     } = this.state;
@@ -109,20 +108,18 @@ class App extends Component {
           <Toolbar>
             {isAuthenticated ? (
               <React.Fragment>
-                <Button onClick={() => this.showView(["isMembersVisible"])}>
+                <Button onClick={() => this.showView("isMembersVisible")}>
                   Members
                 </Button>
-                <Button onClick={() => this.showView(["isEventsVisible"])}>
+                <Button
+                  onClick={() => this.showView("isUpcomingEventsVisible")}
+                >
                   Upcoming Events
                 </Button>
-                <Button
-                  onClick={() =>
-                    this.showView(["isEventsVisible", "isPastEvents"])
-                  }
-                >
+                <Button onClick={() => this.showView("isPastEventsVisible")}>
                   Past Events
                 </Button>
-                <Button onClick={() => this.showView(["isCreateEventVisible"])}>
+                <Button onClick={() => this.showView("isCreateEventVisible")}>
                   Create new Event
                 </Button>
               </React.Fragment>
@@ -141,11 +138,16 @@ class App extends Component {
           members={members}
           onApproveMember={this.handleApproveMember}
         />
-        <Events
-          events={events}
+        <UpcomingEvents
+          events={events.filter(e => !isPastEvent(e.date))}
           fetchEvents={this.fetchEvents}
-          isVisible={isEventsVisible}
-          isPastEvents={isPastEvents}
+          isVisible={isUpcomingEventsVisible}
+          token={token}
+        />
+        <PastEvents
+          events={events.filter(e => isPastEvent(e.date))}
+          fetchEvents={this.fetchEvents}
+          isVisible={isPastEventsVisible}
           members={members}
           token={token}
         />
@@ -182,8 +184,14 @@ export default App;
 
 const initialVisibilitiesState = {
   isMembersVisible: false,
-  isPendingMembersVisible: false,
-  isEventsVisible: false,
-  isPastEvents: false,
+  isUpcomingEventsVisible: false,
+  isPastEventsVisible: false,
   isCreateEventVisible: false
 };
+
+function isPastEvent(date) {
+  const today = new Date();
+  const eventDate = new Date(date);
+
+  return today > eventDate;
+}
