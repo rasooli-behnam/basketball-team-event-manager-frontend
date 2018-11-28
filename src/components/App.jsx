@@ -72,6 +72,24 @@ class App extends Component {
       });
   };
 
+  handleApproveMember = member => {
+    axios
+      .put(
+        `http://localhost:8080/api/members/${member._id}`,
+        {
+          allowedOperations: ["read", "create", "update", "delete"]
+        },
+        {
+          headers: {
+            "x-auth-token": this.state.token
+          }
+        }
+      )
+      .then(() => {
+        this.fetchMembers();
+      });
+  };
+
   render() {
     const {
       events,
@@ -93,11 +111,6 @@ class App extends Component {
               <React.Fragment>
                 <Button onClick={() => this.showView(["isMembersVisible"])}>
                   Members
-                </Button>
-                <Button
-                  onClick={() => this.showView(["isPendingMembersVisible"])}
-                >
-                  Pending Members
                 </Button>
                 <Button onClick={() => this.showView(["isEventsVisible"])}>
                   Upcoming Events
@@ -123,7 +136,11 @@ class App extends Component {
             )}
           </Toolbar>
         </AppBar>
-        <Members isVisible={isMembersVisible} members={members} />
+        <Members
+          isVisible={isMembersVisible}
+          members={members}
+          onApproveMember={this.handleApproveMember}
+        />
         <Events
           events={events}
           fetchEvents={this.fetchEvents}
