@@ -79,7 +79,8 @@ class App extends Component {
       isCreateEventVisible,
       isEventsVisible,
       isPastEvents,
-      members
+      members,
+      token
     } = this.state;
 
     return (
@@ -127,6 +128,7 @@ class App extends Component {
           isVisible={isEventsVisible}
           isPastEvents={isPastEvents}
           members={members}
+          token={token}
         />
         <CreateEventForm
           isVisible={isCreateEventVisible}

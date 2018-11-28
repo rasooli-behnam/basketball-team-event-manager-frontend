@@ -25,15 +25,37 @@ class Events extends Component {
   }
 
   handleRowClick = eventData => {
-    this.setState({ isUpdateEventFormVisible: true, targetEvent: eventData });
+    if (this.props.isPastEvents)
+      this.setState({ isUpdateEventFormVisible: true, targetEvent: eventData });
+  };
+
+  handleDeleteEvent = eventData => {
+    axios
+      .delete(`http://localhost:8080/api/events/${eventData._id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": this.props.token
+        }
+      })
+      .then(() => {
+        this.props.fetchEvents();
+      });
   };
 
   handleUpdateEventFormSubmit = ({ _id, payer, bill_amount }) => {
     axios
-      .put(`http://localhost:8080/api/events/${_id}`, {
-        memberId: payer,
-        billAmount: bill_amount
-      })
+      .put(
+        `http://localhost:8080/api/events/${_id}`,
+        {
+          memberId: payer,
+          billAmount: bill_amount
+        },
+        {
+          headers: {
+            "x-auth-token": this.props.token
+          }
+        }
+      )
       .then(() => {
         this.props.fetchEvents();
         this.setState({ isUpdateEventFormVisible: false });
@@ -72,11 +94,15 @@ class Events extends Component {
                       <TableCell>{e.venue}</TableCell>
                       <TableCell>{e.date}</TableCell>
                       <TableCell>{e.created_by}</TableCell>
-                      {isPastEvents && (
+                      {isPastEvents ? (
                         <React.Fragment>
                           <TableCell>{e.payer}</TableCell>
                           <TableCell>{e.bill_amount}</TableCell>
                         </React.Fragment>
+                      ) : (
+                        <TableCell onClick={() => this.handleDeleteEvent(e)}>
+                          Delete
+                        </TableCell>
                       )}
                     </TableRow>
                   );
